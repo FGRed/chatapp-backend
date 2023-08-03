@@ -19,6 +19,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.swing.text.html.Option;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Optional;
@@ -103,9 +104,14 @@ public class CUserService implements UserDetailsService, BasicService<CUser, Lon
     public CUser logIn(String username, String password) {
 
         var userOpt = cUserRepository.findByUsername(username);
+
+        if(userOpt.isEmpty()) {
+            userOpt = cUserRepository.findByEmail(username);
+        }
+
         if(userOpt.isPresent()) {
 
-            UsernamePasswordAuthenticationToken loginToken = new UsernamePasswordAuthenticationToken(username, password);
+            UsernamePasswordAuthenticationToken loginToken = new UsernamePasswordAuthenticationToken(userOpt.get().getUsername(), password);
             Authentication authenticatedUser = authenticationManager.authenticate(loginToken);
 
             if (!authenticatedUser.isAuthenticated()) {
@@ -140,6 +146,28 @@ public class CUserService implements UserDetailsService, BasicService<CUser, Lon
         Object principal = authentication.getPrincipal();
         if(principal instanceof CUser) {
             return  ((CUser) principal);
+        }
+        return null;
+    }
+
+    public CUser changeUserEmail(String email) {
+        Optional<CUser> userOptional = cUserRepository.findByEmail(email);
+        if(userOptional.isEmpty()) {
+            CUser cUser = getCurrentSessionUser();
+            cUser.setEmail(email);
+            cUser = cUserRepository.save(cUser);
+            return cUser;
+        }
+        return null;
+    }
+
+    public CUser changeUsername(String username) {
+        Optional<CUser> userOptional = cUserRepository.findByUsername(username);
+        if(userOptional.isEmpty()) {
+            CUser cUser = getCurrentSessionUser();
+            cUser.setUsername(username);
+            cUser = cUserRepository.save(cUser);
+            return cUser;
         }
         return null;
     }

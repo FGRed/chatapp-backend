@@ -50,5 +50,22 @@ public class CUserRestController {
         }
     }
 
+    @PutMapping("/email-change/{email}")
+    ResponseEntity<CUser> setEmail(@PathVariable("email") String email){
+        CUser c = service.changeUserEmail(email);
+        if(c != null){
+            return ResponseEntity.ok(c);
+        }
+        return ResponseEntity.badRequest().body(null);
+    }
+
+    @PutMapping("/username-change/{username}")
+    ResponseEntity<CUser> setUsername(@PathVariable("username") String username){
+        CUser c = service.changeUsername(username);
+        if(c != null){
+            return ResponseEntity.ok(c);
+        }
+        return ResponseEntity.badRequest().body(null);
+    }
 
 }

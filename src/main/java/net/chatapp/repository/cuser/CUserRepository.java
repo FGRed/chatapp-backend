@@ -12,4 +12,7 @@ public interface CUserRepository extends JpaRepository<CUser, Long> {
 
     @Query("select c from CUser c where c.username = :username")
     Optional<CUser> findByUsername(@Param("username") final String username);
+
+    @Query("select c from CUser c where c.email = :email")
+    Optional<CUser> findByEmail(@Param("email") final String email);
 }
