@@ -1,5 +1,6 @@
 package net.chatapp.restcontroller.cuser;
 
+import lombok.Getter;
 import net.chatapp.model.cuser.CUser;
 import net.chatapp.service.cuser.CUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +17,9 @@ public class CUserRestController {
 
     @PostMapping("/sign-up")
     ResponseEntity<CUser> singUp(@RequestParam("username") String username,
-                                @RequestParam("password") String password,
-                                @RequestParam("password-repeat") String passwordRepeat){
-        if(password.equals(passwordRepeat)) {
+                                 @RequestParam("password") String password,
+                                 @RequestParam("password-repeat") String passwordRepeat) {
+        if (password.equals(passwordRepeat)) {
             CUser c = service.signUp(username, password);
             if (c == null) {
                 return ResponseEntity.badRequest().body(null);
@@ -32,10 +33,19 @@ public class CUserRestController {
     ResponseEntity<CUser> logIn(@RequestParam("username") String username,
                                 @RequestParam("password") String password) {
         CUser c = service.logIn(username, password);
-        if(c != null) {
+        if (c != null) {
             return ResponseEntity.ok(c);
+        } else {
+            return ResponseEntity.badRequest().body(null);
         }
-        else {
+    }
+
+    @GetMapping("/current")
+    ResponseEntity<CUser> getCurrentSessionUser() {
+        CUser c = service.getCurrentSessionUser();
+        if (c != null) {
+            return ResponseEntity.ok(c);
+        } else {
             return ResponseEntity.badRequest().body(null);
         }
     }

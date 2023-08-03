@@ -18,8 +18,9 @@ import java.util.List;
 @Getter
 @Setter
 public class CUser implements UserDetails {
-   @GeneratedValue(strategy = GenerationType.AUTO)
+
    @Id
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
    private Long id;
 
    @NotNull
@@ -29,6 +30,7 @@ public class CUser implements UserDetails {
    private String password;
 
    private String email;
+   @Column(length = 10000)
    private String avatar;
    private String role;
 
