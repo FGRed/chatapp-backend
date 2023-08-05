@@ -14,8 +14,25 @@ public class CUserRestController {
     @Autowired
     private CUserService service;
 
+    @PutMapping("/email/{email}")
+    ResponseEntity<CUser> setEmail(@PathVariable("email") String email){
+        CUser c = service.changeUserEmail(email);
+        if(c != null){
+            return ResponseEntity.ok(c);
+        }
+        return ResponseEntity.badRequest().body(null);
+    }
 
-    @PostMapping("/sign-up")
+    @PutMapping("/username/{username}")
+    ResponseEntity<CUser> setUsername(@PathVariable("username") String username){
+        CUser c = service.changeUsername(username);
+        if(c != null){
+            return ResponseEntity.ok(c);
+        }
+        return ResponseEntity.badRequest().body(null);
+    }
+
+    @PostMapping("/")
     ResponseEntity<CUser> singUp(@RequestParam("username") String username,
                                  @RequestParam("password") String password,
                                  @RequestParam("password-repeat") String passwordRepeat) {
@@ -29,43 +46,5 @@ public class CUserRestController {
         return ResponseEntity.badRequest().body(null);
     }
 
-    @PostMapping("/log-in")
-    ResponseEntity<CUser> logIn(@RequestParam("username") String username,
-                                @RequestParam("password") String password) {
-        CUser c = service.logIn(username, password);
-        if (c != null) {
-            return ResponseEntity.ok(c);
-        } else {
-            return ResponseEntity.badRequest().body(null);
-        }
-    }
-
-    @GetMapping("/current")
-    ResponseEntity<CUser> getCurrentSessionUser() {
-        CUser c = service.getCurrentSessionUser();
-        if (c != null) {
-            return ResponseEntity.ok(c);
-        } else {
-            return ResponseEntity.badRequest().body(null);
-        }
-    }
-
-    @PutMapping("/email-change/{email}")
-    ResponseEntity<CUser> setEmail(@PathVariable("email") String email){
-        CUser c = service.changeUserEmail(email);
-        if(c != null){
-            return ResponseEntity.ok(c);
-        }
-        return ResponseEntity.badRequest().body(null);
-    }
-
-    @PutMapping("/username-change/{username}")
-    ResponseEntity<CUser> setUsername(@PathVariable("username") String username){
-        CUser c = service.changeUsername(username);
-        if(c != null){
-            return ResponseEntity.ok(c);
-        }
-        return ResponseEntity.badRequest().body(null);
-    }
 
 }
