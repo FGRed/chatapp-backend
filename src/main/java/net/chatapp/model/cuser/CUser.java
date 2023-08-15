@@ -3,12 +3,17 @@ package net.chatapp.model.cuser;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Getter;
 import lombok.Setter;
+import net.chatapp.model.deviceinformation.DeviceInformation;
+import net.chatapp.validator.CUserValidation;
+import org.hibernate.annotations.Type;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -27,11 +32,18 @@ public class CUser implements UserDetails {
    private String username;
 
    @JsonBackReference
+   @Pattern(regexp = "^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\",.<>/?]).{8,}$",
+           message = "Password must have at least 8 characters, one uppercase letter, and one special character")
    private String password;
 
+   @Email
    private String email;
-   @Column(length = 10000)
-   private String avatar;
+
+   @Lob
+   @Basic(fetch = FetchType.LAZY)
+   @Type(type = "org.hibernate.type.ImageType")
+   private byte[] avatar;
+   @NotNull
    private String role;
 
    @JsonBackReference
@@ -48,9 +60,19 @@ public class CUser implements UserDetails {
       return list;
    }
 
+   private String sessionId;
+
    private boolean online;
 
    private Date creationDate = new Date();
    private Date lastLogin = new Date();
+
+   @Column(length = 100)
+   private String freeWord;
+
+   @OneToOne
+   @JsonBackReference
+   private DeviceInformation deviceInformation;
+
 
 }

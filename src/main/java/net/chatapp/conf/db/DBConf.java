@@ -1,12 +1,20 @@
 package net.chatapp.conf.db;
 
+import net.chatapp.model.chat.Chat;
 import net.chatapp.model.cuser.CUser;
+import net.chatapp.repository.chatmessage.ChatMessageRepository;
+import net.chatapp.service.chat.ChatService;
 import net.chatapp.service.cuser.CUserService;
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 @Configuration
 public class DBConf {
@@ -17,16 +25,41 @@ public class DBConf {
     @Autowired
     ApplicationArguments appArgs;
 
+    @Autowired
+    ChatService chatService;
+
+    @Autowired
+    ChatMessageRepository chatMessageRepository;
+
     @Bean
     CommandLineRunner initDatabase() {
         return args -> {
 
-
             CUser cUser = new CUser();
-            cUser.setAvatar("https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/a6ce62a7-bf87-485f-a844-cc45c137d88b/dakwf2r-ffc886d4-f25a-4a8f-84a0-c2d34aaf91d3.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2E2Y2U2MmE3LWJmODctNDg1Zi1hODQ0LWNjNDVjMTM3ZDg4YlwvZGFrd2Yyci1mZmM4ODZkNC1mMjVhLTRhOGYtODRhMC1jMmQzNGFhZjkxZDMucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.soh3wRnoOJJin1l6bNUKxnYTn3ZMcpsV9CNZPrUf7GU");
             cUser.setUsername("admin");
             cUser.setPassword("admin");
-            cUserService.saveNew(cUser);
+            cUser.setAvatar(readBase64FromFile(System.getProperty("user.dir")+"/src/main/java/net/chatapp/conf/db/avatarbase-64.txt"));
+            cUser.setRole("ADMIN");
+            cUser = cUserService.saveNew(cUser);
+
+            CUser cUser2 = new CUser();
+
+            cUser2.setUsername("user");
+            cUser2.setPassword("user");
+            cUser2.setRole("USER");
+            cUser2.setAvatar(readBase64FromFile(System.getProperty("user.dir")+"/src/main/java/net/chatapp/conf/db/avatarbase-64.txt"));
+            cUser2 = cUserService.saveNew(cUser2);
+
+            Chat chat = new Chat();
+            chat.setChatCreatorId(cUser.getId());
+            chat.addToParticipants(cUser);
+            chat.addToParticipants(cUser2);
+            chat = chatService.saveNew(chat);
+
         };
+    }
+
+    public byte[] readBase64FromFile(String filePath) throws IOException {
+        return Base64.decodeBase64(Files.readAllBytes(new File(filePath).toPath()));
     }
 }

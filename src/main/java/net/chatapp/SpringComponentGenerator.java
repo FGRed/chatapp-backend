@@ -7,10 +7,10 @@ import java.io.PrintWriter;
 public class SpringComponentGenerator {
 
     public static void main(String... args) {
-        createBundle("Settings");
+        createBundle("DeviceInformation", true, false);
     }
 
-    public static String createBundle(String className) {
+    public static String createBundle(String className, boolean createService, boolean createController) {
 
         String packageStr = "package net.chatapp.model." + className.toLowerCase();
 
@@ -46,33 +46,38 @@ public class SpringComponentGenerator {
         printFile("Repository", className, repositoryClass);
 
         packageStr = "net.chatapp.service." + className.toLowerCase();
+        if(createService) {
+            String serviceClass = "package " + packageStr + ";\n" +
+                    "import org.springframework.stereotype.Service;\n" +
+                    "\n" +
+                    "@Service\n" +
+                    "public class " + className + "Service {\n" +
+                    "}";
 
-        String serviceClass = "package " + packageStr + ";\n" +
-                "import org.springframework.stereotype.Service;\n" +
-                "\n" +
-                "@Service\n" +
-                "public class " + className + "Service {\n" +
-                "}";
+            printFile("Service", className, serviceClass);
+        }
 
-        printFile("Service", className, serviceClass);
+        if(createController) {
 
-        packageStr = "net.himo.himonetapiv1.restcontroller." + className.toLowerCase();
+            packageStr = "net.himo.himonetapiv1.restcontroller." + className.toLowerCase();
 
-        String stringBuilder = "package " + packageStr + ";" +
-                "\n" +
-                "\n" +
-                "import org.springframework.web.bind.annotation.*;" +
-                "\n" +
-                "\n" +
-                "@RestController" +
-                "\n" +
-                "@RequestMapping(\"/" + className.toLowerCase() + "\")" +
-                "\n" +
-                "public class " + className + "RestController {" +
-                "\n" +
-                "}";
+            String stringBuilder = "package " + packageStr + ";" +
+                    "\n" +
+                    "\n" +
+                    "import org.springframework.web.bind.annotation.*;" +
+                    "\n" +
+                    "\n" +
+                    "@RestController" +
+                    "\n" +
+                    "@RequestMapping(\"/" + className.toLowerCase() + "\")" +
+                    "\n" +
+                    "public class " + className + "RestController {" +
+                    "\n" +
+                    "}";
 
-        printFile("RestController", className, stringBuilder);
+            printFile("RestController", className, stringBuilder);
+        }
+
         return "";
 
     }

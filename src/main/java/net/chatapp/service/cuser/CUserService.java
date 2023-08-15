@@ -5,14 +5,15 @@ import net.chatapp.error.CUserSaveExcpetion;
 import net.chatapp.model.cuser.CUser;
 import net.chatapp.repository.cuser.CUserRepository;
 import net.chatapp.service.BasicService;
+import net.chatapp.service.deviceinformation.DeviceInformationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,13 +21,14 @@ import org.springframework.security.web.authentication.logout.CookieClearingLogo
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.swing.text.html.Option;
+import java.io.IOException;
 import java.util.Collection;
-import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -44,6 +46,12 @@ public class CUserService implements UserDetailsService, BasicService<CUser, Lon
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
+    @Autowired
+    private SessionRegistry sessionRegistry;
+
+    @Autowired
+    private DeviceInformationService deviceInformationService;
+
 
     @Override
     public UserDetails loadUserByUsername(final String username) {
@@ -52,6 +60,15 @@ public class CUserService implements UserDetailsService, BasicService<CUser, Lon
             return cUserOptional.get();
         }
         logger.info("No user found with username " + username);
+        return null;
+    }
+
+    public CUser loadUserByEmail(final String email) {
+        Optional<CUser> cUserOptional = cUserRepository.findByEmail(email);
+        if (cUserOptional.isPresent()) {
+            return cUserOptional.get();
+        }
+        logger.info("No user found with email " + email);
         return null;
     }
 
@@ -106,16 +123,15 @@ public class CUserService implements UserDetailsService, BasicService<CUser, Lon
         return cUserRepository.saveAll(entities);
     }
 
-    public CUser logIn(String username, String password) {
+    public CUser logIn(String username, String password, HttpServletRequest request) {
 
         var userOpt = cUserRepository.findByUsername(username);
 
-        if(userOpt.isEmpty()) {
+        if (userOpt.isEmpty()) {
             userOpt = cUserRepository.findByEmail(username);
         }
 
-        if(userOpt.isPresent()) {
-
+        if (userOpt.isPresent()) {
             UsernamePasswordAuthenticationToken loginToken = new UsernamePasswordAuthenticationToken(userOpt.get().getUsername(), password);
             Authentication authenticatedUser = authenticationManager.authenticate(loginToken);
 
@@ -126,6 +142,17 @@ public class CUserService implements UserDetailsService, BasicService<CUser, Lon
             CUser user = ((CUser) authenticatedUser.getPrincipal());
 
             SecurityContextHolder.getContext().setAuthentication(authenticatedUser);
+
+            String sessionId = request.getSession().getId();
+            sessionRegistry.registerNewSession(sessionId, authenticatedUser.getPrincipal());
+            user.setSessionId(sessionId);
+            user.setDeviceInformation(null);
+            user = deviceInformationService.fillDeviceInformation(request, user);
+            user.setOnline(true);
+
+            user = cUserRepository.save(user);
+
+
             return user;
         }
 
@@ -133,12 +160,43 @@ public class CUserService implements UserDetailsService, BasicService<CUser, Lon
 
     }
 
-    public CUser signUp(String username, String password) {
+    public CUser getSessionUser(String username, String password) {
+
+        CUser userComp = (CUser) loadUserByUsername(username);
+        if(userComp == null){
+            userComp = loadUserByEmail(username);
+            if(userComp == null){
+                return null;
+            }
+        }
+
+        UsernamePasswordAuthenticationToken loginToken = new UsernamePasswordAuthenticationToken(userComp.getUsername(), password);
+        Authentication authenticatedUser = authenticationManager.authenticate(loginToken);
+        if (authenticatedUser != null && authenticatedUser.isAuthenticated()) {
+            return ((CUser) authenticatedUser.getPrincipal());
+        }
+        return null;
+    }
+
+
+    public boolean userAlreadyLoggedIn(String username) {
+        List<Object> principals = sessionRegistry.getAllPrincipals();
+        for (Object o : principals) {
+            if (o instanceof CUser && ((CUser) o).getUsername().equals(username)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public CUser signUp(String username, String password, String email) {
         UserDetails userDetails = loadUserByUsername(username);
-        if(userDetails == null) {
+        if (userDetails == null) {
             CUser c = new CUser();
             c.setUsername(username);
             c.setPassword(password);
+            c.setEmail(email);
+            c.setRole("USER");
             c = saveNew(c);
             return c;
         }
@@ -147,17 +205,21 @@ public class CUserService implements UserDetailsService, BasicService<CUser, Lon
 
     public CUser getCurrentSessionUser() {
         SecurityContext securityContext = SecurityContextHolder.getContext();
+
         Authentication authentication = securityContext.getAuthentication();
-        Object principal = authentication.getPrincipal();
-        if(principal instanceof CUser) {
-            return  ((CUser) principal);
+        if(authentication != null) {
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof CUser) {
+                return ((CUser) principal);
+            }
         }
+
         return null;
     }
 
     public CUser changeUserEmail(String email) {
         Optional<CUser> userOptional = cUserRepository.findByEmail(email);
-        if(userOptional.isEmpty()) {
+        if (userOptional.isEmpty()) {
             CUser cUser = getCurrentSessionUser();
             cUser.setEmail(email);
             cUser = cUserRepository.save(cUser);
@@ -168,8 +230,9 @@ public class CUserService implements UserDetailsService, BasicService<CUser, Lon
 
     public CUser changeUsername(String username) {
         Optional<CUser> userOptional = cUserRepository.findByUsername(username);
-        if(userOptional.isEmpty()) {
+        if (userOptional.isEmpty()) {
             CUser cUser = getCurrentSessionUser();
+
             cUser.setUsername(username);
             cUser = cUserRepository.save(cUser);
             return cUser;
@@ -177,8 +240,9 @@ public class CUserService implements UserDetailsService, BasicService<CUser, Lon
         return null;
     }
 
-    public CUser logout(HttpServletRequest request, HttpServletResponse response){
+    public CUser logout(HttpServletRequest request, HttpServletResponse response) {
 
+        sessionRegistry.removeSessionInformation(getCurrentSessionUser().getSessionId());
         CookieClearingLogoutHandler cookieClearingLogoutHandler = new CookieClearingLogoutHandler(AbstractRememberMeServices.SPRING_SECURITY_REMEMBER_ME_COOKIE_KEY);
         SecurityContextLogoutHandler securityContextLogoutHandler = new SecurityContextLogoutHandler();
         cookieClearingLogoutHandler.logout(request, response, null);
@@ -193,5 +257,26 @@ public class CUserService implements UserDetailsService, BasicService<CUser, Lon
         return new CUser();
     }
 
+    public CUser changeAvatar(MultipartFile avatarMultiPart) {
+        try {
+            byte[] base64Avatar = avatarMultiPart.getBytes();
+            CUser cUser = getCurrentSessionUser();
+            if (cUser != null) {
+                cUser.setAvatar(base64Avatar);
+                cUserRepository.save(cUser);
+                return cUser;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
+        return null;
+    }
+
+    public List<CUser> getUsers(){
+        List<CUser> retVal = cUserRepository.findAll();
+        CUser currentUser = getCurrentSessionUser();
+        retVal.removeIf(cUser -> cUser.getId().equals(currentUser.getId()));
+        return retVal;
+    }
 }

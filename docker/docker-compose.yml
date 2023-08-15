@@ -1,0 +1,58 @@
+services:
+  database:
+    container_name: postgres-db
+    image: postgres:latest
+    ports:
+      - '5444:5432'
+    environment:
+      - 'POSTGRES_USER=chatapp'
+      - 'POSTGRES_DB=chatappdb'
+      - 'POSTGRES_PASSWORD=Penumbra'
+    networks:
+      - chatapp-network
+  pgadmin:
+    container_name: pgadmin4
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: chatapp@chatapp.net
+      PGADMIN_DEFAULT_PASSWORD: CHATAPP636
+    networks:
+      - chatapp-network
+    ports:
+      - "6001:80"
+  chatapp-backend:
+    container_name: chatapp-backend
+    image:
+      chatapp-backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8080"
+    networks:
+      - chatapp-network
+    environment:
+      - "SPRING_PROFILES_ACTIVE=docker"
+  chatapp-frontend:
+    container_name: chatapp-frontend
+    image:
+      chatapp-frontend
+    build:
+      context: ../../chat-app
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../../chat-app:/app/:rw,delegated
+      - /node_modules
+    networks:
+      - chatapp-network
+    links:
+      - chatapp-backend
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - "REACT_APP_ENV=docker"
+networks:
+  chatapp-network:
+

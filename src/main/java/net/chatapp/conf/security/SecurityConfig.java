@@ -1,21 +1,16 @@
 package net.chatapp.conf.security;
 
-import net.chatapp.service.cuser.CUserService;
+import net.chatapp.handler.CLogoutHandler;
+import net.chatapp.interceptor.BeforeRequestInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.session.SessionRegistryImpl;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.web.session.HttpSessionEventPublisher;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
@@ -29,25 +24,33 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     public SessionRegistry sessionRegistry;
 
+    @Autowired
+    private CLogoutHandler cLogoutHandler;
+
+    @Bean
+    public CLogoutHandler customLogoutSuccessHandler(){
+        return new CLogoutHandler();
+    }
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         final CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://192.168.1.191:3000"));
+        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://192.168.1.191:3000", "http://chatapp-frontend:3000", "http://localhost:3003/"));
         configuration.setAllowedMethods(List.of("HEAD",
                 "GET", "POST", "PUT", "DELETE", "PATCH"));
         configuration.setAllowCredentials(true);
-
-
         configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("http://localhost:3000", configuration);
-
+        source.registerCorsConfiguration("http://chatapp-frontend:3000", configuration);
+        source.registerCorsConfiguration("http://localhost:3003", configuration);
         http.authorizeRequests()
                 .antMatchers( "/queue/**", "/news/add**", "/news/remove**").hasAnyRole("ADMIN")
                 .antMatchers("/**").permitAll().anyRequest().authenticated()
+                .and().logout().logoutUrl("/session/logout").addLogoutHandler(cLogoutHandler)
                 .and().csrf().disable()
                 .cors().configurationSource(request -> configuration)
-                .and().sessionManagement().maximumSessions(1).sessionRegistry(sessionRegistry);
+                .and().sessionManagement().maximumSessions(1).maxSessionsPreventsLogin(true);
     }
 
 }
