@@ -35,7 +35,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         final CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://192.168.1.191:3000", "http://chatapp-frontend:3000", "http://localhost:3003/"));
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:3000",
+                "http://192.168.1.191:3000",
+                "http://chatapp-frontend:3000",
+                "http://chatapp.net.local:3000",
+                "http://chatapp.net:3000"
+        ));
         configuration.setAllowedMethods(List.of("HEAD",
                 "GET", "POST", "PUT", "DELETE", "PATCH"));
         configuration.setAllowCredentials(true);
@@ -43,14 +49,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("http://localhost:3000", configuration);
         source.registerCorsConfiguration("http://chatapp-frontend:3000", configuration);
-        source.registerCorsConfiguration("http://localhost:3003", configuration);
+        source.registerCorsConfiguration("http://chatapp.net.local:3000", configuration);
+        source.registerCorsConfiguration("http://chatapp.net:3000", configuration);
         http.authorizeRequests()
-                .antMatchers( "/queue/**", "/news/add**", "/news/remove**").hasAnyRole("ADMIN")
+                //.antMatchers( "/queue/**", "/news/add**", "/news/remove**").hasAnyRole("ADMIN")
                 .antMatchers("/**").permitAll().anyRequest().authenticated()
                 .and().logout().logoutUrl("/session/logout").addLogoutHandler(cLogoutHandler)
                 .and().csrf().disable()
                 .cors().configurationSource(request -> configuration)
-                .and().sessionManagement().maximumSessions(1).maxSessionsPreventsLogin(true);
+                .and()
+                .sessionManagement()
+                .maximumSessions(1)
+                .maxSessionsPreventsLogin(false)
+                .expiredUrl("/session/session-expired").and().invalidSessionUrl("/session/session-expired");
     }
 
 }

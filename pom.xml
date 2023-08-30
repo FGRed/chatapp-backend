@@ -10,7 +10,7 @@
     </parent>
     <groupId>net.chatapp</groupId>
     <artifactId>chatapp-backend</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>23.26.08.01-SNAPSHOT</version>
     <name>chatapp-backend</name>
     <description>chatapp-backend</description>
     <properties>

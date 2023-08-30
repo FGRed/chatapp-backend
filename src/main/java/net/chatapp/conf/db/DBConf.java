@@ -1,8 +1,10 @@
 package net.chatapp.conf.db;
 
 import net.chatapp.model.chat.Chat;
+import net.chatapp.model.contact.Contact;
 import net.chatapp.model.cuser.CUser;
 import net.chatapp.repository.chatmessage.ChatMessageRepository;
+import net.chatapp.repository.contact.ContactRepository;
 import net.chatapp.service.chat.ChatService;
 import net.chatapp.service.cuser.CUserService;
 import org.apache.commons.codec.binary.Base64;
@@ -31,6 +33,9 @@ public class DBConf {
     @Autowired
     ChatMessageRepository chatMessageRepository;
 
+    @Autowired
+    ContactRepository contactRepository;
+
     @Bean
     CommandLineRunner initDatabase() {
         return args -> {
@@ -43,12 +48,16 @@ public class DBConf {
             cUser = cUserService.saveNew(cUser);
 
             CUser cUser2 = new CUser();
-
             cUser2.setUsername("user");
             cUser2.setPassword("user");
             cUser2.setRole("USER");
             cUser2.setAvatar(readBase64FromFile(System.getProperty("user.dir")+"/src/main/java/net/chatapp/conf/db/avatarbase-64.txt"));
             cUser2 = cUserService.saveNew(cUser2);
+
+            Contact contact = new Contact();
+            contact.setContactUser(cUser2);
+            contact.setRelatesToUser(cUser.getId());
+            contactRepository.save(contact);
 
             Chat chat = new Chat();
             chat.setChatCreatorId(cUser.getId());

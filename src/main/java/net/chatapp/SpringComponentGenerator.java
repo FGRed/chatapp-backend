@@ -7,7 +7,7 @@ import java.io.PrintWriter;
 public class SpringComponentGenerator {
 
     public static void main(String... args) {
-        createBundle("DeviceInformation", true, false);
+        createBundle("Contact", true, false);
     }
 
     public static String createBundle(String className, boolean createService, boolean createController) {
@@ -97,6 +97,12 @@ public class SpringComponentGenerator {
 
         System.out.println("Creating class file " + fileStr);
         PrintWriter printWriter = null;
+
+        if(new File(fileStr).exists()){
+            System.out.println("File already exists!");
+            return;
+        }
+
         try {
             printWriter = new PrintWriter(fileStr);
         } catch (FileNotFoundException e) {

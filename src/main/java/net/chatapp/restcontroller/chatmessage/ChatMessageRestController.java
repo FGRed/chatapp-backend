@@ -3,7 +3,6 @@ package net.chatapp.restcontroller.chatmessage;
 import net.chatapp.model.chatmessage.ChatMessage;
 import net.chatapp.model.chatmessage.ChatMessageDTO;
 import net.chatapp.service.chatmessage.ChatMessageService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -18,15 +17,18 @@ import java.util.UUID;
 @RequestMapping("/chatmessage")
 public class ChatMessageRestController {
 
-    @Autowired
-    private ChatMessageService chatMessageService;
+    private final ChatMessageService chatMessageService;
 
-    @Autowired
-    private SimpMessagingTemplate simpMessagingTemplate;
+    private final SimpMessagingTemplate simpMessagingTemplate;
+
+    public ChatMessageRestController(ChatMessageService chatMessageService, SimpMessagingTemplate simpMessagingTemplate) {
+        this.chatMessageService = chatMessageService;
+        this.simpMessagingTemplate = simpMessagingTemplate;
+    }
 
     @GetMapping("/by-chat-uuid/{chatUUID}")
     ResponseEntity<List<ChatMessage>> getMessagesByChatID(@PathVariable("chatUUID") final UUID chatUUID){
-        return ResponseEntity.ok(chatMessageService.getByChatUUID(chatUUID));
+        return ResponseEntity.ok(chatMessageService.fetchChatsMessages(chatUUID));
     }
     @PostMapping("/")
     ResponseEntity<ChatMessage> postMessage(@RequestBody ChatMessageDTO chatMessageDTO){

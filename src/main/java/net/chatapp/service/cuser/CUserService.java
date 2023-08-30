@@ -2,7 +2,9 @@ package net.chatapp.service.cuser;
 
 import net.chatapp.error.CUserNotFoundException;
 import net.chatapp.error.CUserSaveExcpetion;
+import net.chatapp.model.contact.Contact;
 import net.chatapp.model.cuser.CUser;
+import net.chatapp.repository.contact.ContactRepository;
 import net.chatapp.repository.cuser.CUserRepository;
 import net.chatapp.service.BasicService;
 import net.chatapp.service.deviceinformation.DeviceInformationService;
@@ -51,6 +53,9 @@ public class CUserService implements UserDetailsService, BasicService<CUser, Lon
 
     @Autowired
     private DeviceInformationService deviceInformationService;
+
+    @Autowired
+    private ContactRepository contactRepository;
 
 
     @Override
@@ -163,9 +168,9 @@ public class CUserService implements UserDetailsService, BasicService<CUser, Lon
     public CUser getSessionUser(String username, String password) {
 
         CUser userComp = (CUser) loadUserByUsername(username);
-        if(userComp == null){
+        if (userComp == null) {
             userComp = loadUserByEmail(username);
-            if(userComp == null){
+            if (userComp == null) {
                 return null;
             }
         }
@@ -207,7 +212,7 @@ public class CUserService implements UserDetailsService, BasicService<CUser, Lon
         SecurityContext securityContext = SecurityContextHolder.getContext();
 
         Authentication authentication = securityContext.getAuthentication();
-        if(authentication != null) {
+        if (authentication != null) {
             Object principal = authentication.getPrincipal();
             if (principal instanceof CUser) {
                 return ((CUser) principal);
@@ -273,10 +278,12 @@ public class CUserService implements UserDetailsService, BasicService<CUser, Lon
         return null;
     }
 
-    public List<CUser> getUsers(){
+    public List<CUser> getUsers() {
         List<CUser> retVal = cUserRepository.findAll();
         CUser currentUser = getCurrentSessionUser();
         retVal.removeIf(cUser -> cUser.getId().equals(currentUser.getId()));
         return retVal;
     }
+
+
 }

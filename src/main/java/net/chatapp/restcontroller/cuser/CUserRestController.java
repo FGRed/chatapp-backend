@@ -1,6 +1,7 @@
 package net.chatapp.restcontroller.cuser;
 
 import lombok.Getter;
+import net.chatapp.model.contact.Contact;
 import net.chatapp.model.cuser.CUser;
 import net.chatapp.service.cuser.CUserService;
 import org.springframework.beans.factory.annotation.Autowired;

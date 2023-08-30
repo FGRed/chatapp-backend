@@ -32,6 +32,7 @@ public class ChatMessage{
    private void prePersis(){
       this.date = new Date();
    }
+   private boolean read;
 
 
 }

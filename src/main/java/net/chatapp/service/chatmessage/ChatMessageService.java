@@ -6,8 +6,10 @@ import net.chatapp.model.cuser.CUser;
 import net.chatapp.repository.chatmessage.ChatMessageRepository;
 import net.chatapp.service.cuser.CUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,9 +21,24 @@ public class ChatMessageService {
     @Autowired
     private CUserService cUserService;
 
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
 
-    public List<ChatMessage> getByChatUUID(UUID chatUUID){
-       return chatMessageRepository.findByChatId(chatUUID);
+
+    public List<ChatMessage> fetchChatsMessages(UUID chatUUID) {
+        List<ChatMessage> chatMessages =  chatMessageRepository.findByChatId(chatUUID);
+        List<ChatMessage> justReadMessages = new ArrayList<>();
+        for(ChatMessage chatMessage : chatMessages){
+            if(!chatMessage.isRead()){
+                chatMessage.setRead(true);
+                chatMessage = chatMessageRepository.save(chatMessage);
+                justReadMessages.add(chatMessage);
+            }
+        }
+        if(!justReadMessages.isEmpty()) {
+            simpMessagingTemplate.convertAndSend("/topics/unread", justReadMessages);
+        }
+        return chatMessages;
     }
 
     public ChatMessage sendMessage(ChatMessageDTO chatMessageDTO){

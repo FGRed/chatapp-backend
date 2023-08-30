@@ -5,6 +5,7 @@ import net.chatapp.repository.chat.ChatRepository;
 import net.chatapp.service.BasicService;
 import net.chatapp.service.cuser.CUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -18,9 +19,13 @@ public class ChatService implements BasicService<Chat, UUID> {
     private ChatRepository chatRepository;
     @Autowired
     private CUserService cUserService;
+
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
+
     public List<Chat> getChats(){
         final CUser cuser = cUserService.getCurrentSessionUser();
-        if(cuser != null){
+        if(cuser != null) {
             return chatRepository.findChatsByUserId(cuser.getId());
         }
         return null;

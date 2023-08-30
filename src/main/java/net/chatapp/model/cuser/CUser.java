@@ -1,8 +1,10 @@
 package net.chatapp.model.cuser;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import net.chatapp.model.contact.Contact;
 import net.chatapp.model.deviceinformation.DeviceInformation;
 import net.chatapp.validator.CUserValidation;
 import org.hibernate.annotations.Type;
@@ -73,6 +75,4 @@ public class CUser implements UserDetails {
    @OneToOne
    @JsonBackReference
    private DeviceInformation deviceInformation;
-
-
 }

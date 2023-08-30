@@ -5,6 +5,7 @@ import net.chatapp.service.cuser.CUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +18,9 @@ public class SessionController {
 
     @Autowired
     private CUserService service;
+
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
 
     @Secured({"USER", "ADMIN"})
     @DeleteMapping("/logout")
@@ -65,6 +69,12 @@ public class SessionController {
             return ResponseEntity.badRequest().body("Unauthorized access detected. You are currently logged in on another device. More info regarding the issue sent to your email.");
         }
         return ResponseEntity.ok(null);
+    }
+
+    @GetMapping("/session-expired")
+    ResponseEntity<Void> getSessionExpired(){
+       // simpMessagingTemplate.convertAndSend("/topic/session-timeout", true);
+        return ResponseEntity.noContent().build();
     }
 
 }
