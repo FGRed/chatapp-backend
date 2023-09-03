@@ -10,6 +10,7 @@ import net.chatapp.service.BasicService;
 import net.chatapp.service.deviceinformation.DeviceInformationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -232,6 +233,7 @@ public class CUserService implements UserDetailsService, BasicService<CUser, Lon
         }
         return null;
     }
+
 
     public CUser changeUsername(String username) {
         Optional<CUser> userOptional = cUserRepository.findByUsername(username);

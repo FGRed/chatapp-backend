@@ -11,7 +11,7 @@ import java.util.UUID;
 @Repository
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, UUID> {
 
-    @Query("select cm from ChatMessage cm where cm.chatUUID = :cUUID")
+    @Query("select cm from ChatMessage cm where cm.chatUUID = :cUUID order by cm.date asc")
     List<ChatMessage> findByChatId(@Param("cUUID") UUID cUUID);
 
 }

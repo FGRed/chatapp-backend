@@ -33,7 +33,7 @@ public class CUser implements UserDetails {
    @NotNull
    private String username;
 
-   @JsonBackReference
+   @JsonBackReference("password")
    @Pattern(regexp = "^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\",.<>/?]).{8,}$",
            message = "Password must have at least 8 characters, one uppercase letter, and one special character")
    private String password;
@@ -73,6 +73,6 @@ public class CUser implements UserDetails {
    private String freeWord;
 
    @OneToOne
-   @JsonBackReference
+   @JsonBackReference("device-information")
    private DeviceInformation deviceInformation;
 }

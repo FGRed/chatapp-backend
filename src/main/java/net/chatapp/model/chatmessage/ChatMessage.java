@@ -33,6 +33,7 @@ public class ChatMessage{
       this.date = new Date();
    }
    private boolean read;
+   private Date readDate;
 
 
 }
