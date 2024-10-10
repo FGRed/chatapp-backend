@@ -36,21 +36,23 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         final CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(
-                "http://localhost:3000",
+               /* "http://localhost:3000",
                 "http://192.168.1.191:3000",
                 "http://chatapp-frontend:3000",
                 "http://chatapp.net.local:3000",
-                "http://chatapp.net:3000"
+                "http://chatapp.net:3000",*/
+                "https://chatapp-react-7m2q.onrender.com"
         ));
         configuration.setAllowedMethods(List.of("HEAD",
                 "GET", "POST", "PUT", "DELETE", "PATCH"));
         configuration.setAllowCredentials(true);
         configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("http://localhost:3000", configuration);
+        /*source.registerCorsConfiguration("http://localhost:3000", configuration);
         source.registerCorsConfiguration("http://chatapp-frontend:3000", configuration);
         source.registerCorsConfiguration("http://chatapp.net.local:3000", configuration);
-        source.registerCorsConfiguration("http://chatapp.net:3000", configuration);
+        source.registerCorsConfiguration("http://chatapp.net:3000", configuration);*/
+        source.registerCorsConfiguration("https://chatapp-react-7m2q.onrender.com", configuration);
         http.authorizeRequests()
                 .antMatchers("/**").permitAll().anyRequest().authenticated()
                 .and().logout().logoutUrl("/session/logout").addLogoutHandler(cLogoutHandler)
