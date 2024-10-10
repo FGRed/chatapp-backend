@@ -17,7 +17,7 @@ public class Chat {
    @Id
    private UUID id;
 
-   @OneToMany
+   @ManyToMany
    private List<CUser> chatParticipants;
 
    private Long chatCreatorId;

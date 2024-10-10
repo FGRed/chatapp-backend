@@ -4,9 +4,8 @@ import net.chatapp.model.chat.Chat;
 import net.chatapp.service.chat.ChatService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -20,6 +19,7 @@ public class ChatRestController {
         this.chatService = chatService;
     }
 
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
     @GetMapping("/chats")
     ResponseEntity<List<Chat>> getChats(){
         List<Chat> chats = chatService.getChats();
@@ -27,6 +27,20 @@ public class ChatRestController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
         return ResponseEntity.ok(chats);
+    }
+
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
+    @GetMapping("/exists/{cids}")
+    ResponseEntity<Chat> exists(@PathVariable("cids") final Long... cids){
+        Chat exists = chatService.findChatsByParticipants(cids);
+        return ResponseEntity.ok(exists);
+    }
+
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
+    @PostMapping("/")
+    ResponseEntity<Chat> createChat(@RequestParam("participants") final Long... pids){
+        Chat chat = chatService.createChat(pids);
+        return ResponseEntity.ok(chat);
     }
 
 

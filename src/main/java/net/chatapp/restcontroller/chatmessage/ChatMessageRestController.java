@@ -34,7 +34,7 @@ public class ChatMessageRestController {
     ResponseEntity<List<ChatMessage>> postMessage(@RequestBody ChatMessageDTO chatMessageDTO){
         List<ChatMessage> chatMessages = chatMessageService.sendMessage(chatMessageDTO);
         if(!chatMessages.isEmpty()) {
-            simpMessagingTemplate.convertAndSend("/topic/message", chatMessages);
+            simpMessagingTemplate.convertAndSend("/topic/chat/"+chatMessages.get(0).getChatUUID(), chatMessages);
             return ResponseEntity.ok(chatMessages);
         }
         return ResponseEntity.badRequest().body(null);
@@ -47,9 +47,12 @@ public class ChatMessageRestController {
     }
 
     @PutMapping("/set-read")
-    ResponseEntity<List<ChatMessage>> setRead(@RequestBody List<UUID> chatMessageIds) {
+    ResponseEntity<List<ChatMessage>> setRead(@RequestBody List<Long> chatMessageIds) {
         List<ChatMessage> chatMessages = chatMessageService.setRead(chatMessageIds);
-        simpMessagingTemplate.convertAndSend("/topic/unread", chatMessages);
+        if(!chatMessages.isEmpty()){
+            simpMessagingTemplate.convertAndSend("/topic/unread/"+chatMessages.get(0).getChatUUID(), chatMessages);
+        }
+
         return ResponseEntity.ok().body(chatMessages);
     }
 

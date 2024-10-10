@@ -19,4 +19,8 @@ public class CustomChatRepositoryImpl implements CustomChatRepository{
                 .setParameter("uid", uid);
         return typedQuery.getResultList();
     }
+
+
+
+
 }

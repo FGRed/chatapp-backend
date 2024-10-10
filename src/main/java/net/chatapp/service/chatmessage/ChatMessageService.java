@@ -1,8 +1,10 @@
 package net.chatapp.service.chatmessage;
 
+import net.chatapp.model.chat.Chat;
 import net.chatapp.model.chatmessage.ChatMessage;
 import net.chatapp.model.chatmessage.ChatMessageDTO;
 import net.chatapp.model.cuser.CUser;
+import net.chatapp.repository.chat.ChatRepository;
 import net.chatapp.repository.chatmessage.ChatMessageRepository;
 import net.chatapp.service.cuser.CUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,21 +27,12 @@ public class ChatMessageService {
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 
+    @Autowired
+    private ChatRepository chatRepository;
+
 
     public List<ChatMessage> fetchChatsMessages(UUID chatUUID) {
-       List<ChatMessage> chatMessages =  chatMessageRepository.findByChatId(chatUUID);
-       /* List<ChatMessage> justReadMessages = new ArrayList<>();
-        for(ChatMessage chatMessage : chatMessages){
-            if(!chatMessage.isRead()){
-                chatMessage.setRead(true);
-                chatMessage = chatMessageRepository.save(chatMessage);
-                justReadMessages.add(chatMessage);
-            }
-        }
-        if(!justReadMessages.isEmpty()) {
-            simpMessagingTemplate.convertAndSend("/topic/unread", justReadMessages);
-        }*/
-        return chatMessages;
+       return chatMessageRepository.findByChatId(chatUUID);
     }
 
     public List<ChatMessage> sendMessage(ChatMessageDTO chatMessageDTO){
@@ -52,20 +45,21 @@ public class ChatMessageService {
             chatMessage.setReceiverId(receiver.getId());
             chatMessage.setChatUUID(chatMessageDTO.getChatId());
             chatMessageRepository.save(chatMessage);
+            Chat chat = chatRepository.findById(chatMessage.getChatUUID()).get();
+            chat.setLastMessage(chatMessage.getText());
+            chatRepository.save(chat);
         }
-        List<ChatMessage> all = chatMessageRepository.findAll();
-        return all;
+        return chatMessageRepository.findByChatId(chatMessageDTO.getChatId());
     }
 
-    public List<ChatMessage> setRead(List<UUID> chatMessageUUIDs){
-        List<ChatMessage> chatMessages = chatMessageRepository.findAllById(chatMessageUUIDs);
+    public List<ChatMessage> setRead(List<Long> chatMessageIds){
+        List<ChatMessage> chatMessages = chatMessageRepository.findAllById(chatMessageIds);
         for(ChatMessage chatMessage : chatMessages){
             chatMessage.setRead(true);
             chatMessage.setReadDate(new Date());
             chatMessage = chatMessageRepository.save(chatMessage);
         }
-        List<ChatMessage> chatMessageList = chatMessageRepository.findByChatId(chatMessages.get(0).getChatUUID());
-        return chatMessageList;
+        return chatMessageRepository.findByChatId(chatMessages.get(0).getChatUUID());
     }
 
 }

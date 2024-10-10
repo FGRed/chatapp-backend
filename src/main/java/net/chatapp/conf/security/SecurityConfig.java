@@ -52,7 +52,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         source.registerCorsConfiguration("http://chatapp.net.local:3000", configuration);
         source.registerCorsConfiguration("http://chatapp.net:3000", configuration);
         http.authorizeRequests()
-                //.antMatchers( "/queue/**", "/news/add**", "/news/remove**").hasAnyRole("ADMIN")
                 .antMatchers("/**").permitAll().anyRequest().authenticated()
                 .and().logout().logoutUrl("/session/logout").addLogoutHandler(cLogoutHandler)
                 .and().csrf().disable()

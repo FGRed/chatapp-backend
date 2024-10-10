@@ -2,8 +2,6 @@ package net.chatapp.restcontroller.contact;
 
 import net.chatapp.model.contact.Contact;
 import net.chatapp.service.contact.ContactService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,13 +28,18 @@ public class ContactRestController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/")
-    ResponseEntity<Contact> addContact(@RequestParam("contact-id") Long contactId) {
+    @PutMapping("/{contact-id}")
+    ResponseEntity<Contact> addContact(@PathVariable("contact-id") Long contactId) {
         Contact contact = contactService.addContact(contactId);
         if(contact == null){
             return ResponseEntity.badRequest().body(null);
         }
         return ResponseEntity.ok().body(contact);
+    }
+
+    @GetMapping("/exists/{userId}")
+    ResponseEntity<Boolean> exists(@PathVariable("userId") final Long userId){
+        return ResponseEntity.ok(contactService.exists(userId));
     }
 
 }

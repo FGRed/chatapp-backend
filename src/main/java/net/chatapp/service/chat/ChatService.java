@@ -8,9 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class ChatService implements BasicService<Chat, UUID> {
@@ -65,4 +63,33 @@ public class ChatService implements BasicService<Chat, UUID> {
     public Collection<Chat> saveAll(Collection<Chat> entities) {
         return null;
     }
+
+    public Chat findChatsByParticipants(Long... cids) {
+        List<Chat> chats = chatRepository.findAll();
+        for(Chat c : chats){
+            int participantsFound = 0;
+            for (CUser participant : c.getChatParticipants()){
+                for(Long cid :  cids){
+                    if(Objects.equals(cid, participant.getId())){
+                        participantsFound++;
+                    }
+                    if(participantsFound == cids.length){
+                        return c;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public Chat createChat(final Long... participantIds) {
+        CUser sessionUser = cUserService.getCurrentSessionUser();
+        Chat chat = new Chat();
+        List<CUser> participants = cUserService.findByIds(participantIds);
+        chat.setChatCreatorId(sessionUser.getId());
+        participants.add(sessionUser);
+        chat.setChatParticipants(participants);
+        return chatRepository.save(chat);
+    }
+
 }

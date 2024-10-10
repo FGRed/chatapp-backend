@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -41,7 +42,7 @@ public class CUserRestController {
                                  @RequestParam("password") String password,
                                  @RequestParam("email") String email,
                                  @RequestParam("email-confirm") String emailConfirm,
-                                 @RequestParam("password-confirm") String passwordRepeat) {
+                                 @RequestParam("password-confirm") String passwordRepeat) throws IOException {
         if (password.equals(passwordRepeat)) {
             CUser c = service.signUp(username, password, email);
             if (c == null) {
@@ -64,6 +65,11 @@ public class CUserRestController {
     @GetMapping(value = "/")
     ResponseEntity<List<CUser>> getUsersList() {
         return ResponseEntity.ok(service.getUsers());
+    }
+
+    @GetMapping(value = "/find/{keyword}")
+    ResponseEntity<List<CUser>> find(@PathVariable("keyword") String keyword) {
+        return ResponseEntity.ok(service.find(keyword));
     }
 
 

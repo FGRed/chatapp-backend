@@ -16,9 +16,10 @@ import java.util.UUID;
 public class ChatMessage{
    @GeneratedValue(strategy = GenerationType.AUTO)
    @Id
-   private UUID id;
+   private Long id;
    @NotBlank(message = "Message text can't be null or empty.")
    private String text;
+   @GeneratedValue(strategy = GenerationType.SEQUENCE)
    private Date date;
    @NotNull(message = "Message must have a receiver.")
    private Long receiverId;

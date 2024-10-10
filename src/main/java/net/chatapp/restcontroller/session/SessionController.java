@@ -1,12 +1,13 @@
 package net.chatapp.restcontroller.session;
 
 import net.chatapp.model.cuser.CUser;
+import net.chatapp.model.response.ResponseData;
 import net.chatapp.service.cuser.CUserService;
+import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,8 +23,8 @@ public class SessionController {
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 
-    @Secured({"USER", "ADMIN"})
-    @DeleteMapping("/logout")
+   //@Secured({"USER", "ADMIN"})
+    @DeleteMapping("/log-out")
     ResponseEntity<CUser> logout(HttpServletRequest request, HttpServletResponse response){
         CUser c = service.logout(request, response);
         if(c != null){
@@ -42,21 +43,25 @@ public class SessionController {
         }
     }
 
-    @PostMapping("/")
-    ResponseEntity<CUser> logIn(@RequestParam("username") String username,
-                                @RequestParam("password") String password,
-                                HttpServletRequest request) {
-        CUser c = service.logIn(username, password, request);
-        if (c != null) {
-            return ResponseEntity.ok(c);
+    @PostMapping("/log-in")
+    ResponseEntity<ResponseData> logIn(@RequestParam("username") String username,
+                                       @RequestParam("password") String password,
+                                       @RequestParam(value = "logout-active", required = false)
+                                       boolean logoutActive,
+                                       HttpServletRequest request, HttpServletResponse response) {
+        Pair<Object, String> cPair = service.logIn(username, password, request, logoutActive, response);
+        if (cPair.getValue0() != null) {
+            return ResponseEntity
+                    .ok(new ResponseData(cPair.getValue0(), cPair.getValue1()));
         } else {
-            return ResponseEntity.badRequest().body(null);
+            return ResponseEntity.badRequest()
+                    .body(new ResponseData(cPair.getValue0(), cPair.getValue1()));
         }
     }
 
     @PostMapping("/in-registry")
     ResponseEntity<String> getSessionStatus(@RequestParam("username") String username,
-                                             @RequestParam("password") String password) {
+                                            @RequestParam("password") String password) {
 
         CUser user = (CUser) service.getSessionUser(username, password);
         if(user == null) {
