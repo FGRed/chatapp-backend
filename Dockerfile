@@ -1,4 +1,4 @@
-FROM maven:openjdk:18 AS build
+FROM maven:openjdk:18-slim-bullseye AS build
 COPY . .
 RUN mvn clean package -DskipTests
 FROM openjdk:18-slim-bullseye
