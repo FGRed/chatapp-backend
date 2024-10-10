@@ -45,7 +45,7 @@ public class DBConf {
             CUser cUser = new CUser();
             cUser.setUsername("admin");
             cUser.setPassword("admin");
-            cUser.setAvatar(readBase64FromFile(System.getProperty("user.dir")+"/src/main/java/net/chatapp/conf/db/avatarbase-64.txt"));
+
             cUser.setRole("ADMIN");
             cUser = cUserService.saveNew(cUser);
 
@@ -53,21 +53,21 @@ public class DBConf {
             cUser2.setUsername("user");
             cUser2.setPassword("user");
             cUser2.setRole("USER");
-            cUser2.setAvatar(readBase64FromFile(System.getProperty("user.dir")+"/src/main/java/net/chatapp/conf/db/avatarbase-64.txt"));
+
             cUser2 = cUserService.saveNew(cUser2);
 
             CUser cUser3 = new CUser();
             cUser3.setUsername("user 2");
             cUser3.setPassword("user");
             cUser3.setRole("USER");
-            cUser3.setAvatar(readBase64FromFile(System.getProperty("user.dir")+"/src/main/java/net/chatapp/conf/db/avatarbase-64.txt"));
+
             cUser3 = cUserService.saveNew(cUser3);
 
             CUser cUser4 = new CUser();
             cUser4.setUsername("user 3");
             cUser4.setPassword("user");
             cUser4.setRole("USER");
-            cUser4.setAvatar(readBase64FromFile(System.getProperty("user.dir")+"/src/main/java/net/chatapp/conf/db/avatarbase-64.txt"));
+
             cUser4 = cUserService.saveNew(cUser4);
 
             for (int i = 0; i < 100; i++) {
@@ -75,7 +75,7 @@ public class DBConf {
                 cUser5.setUsername("user " + i);
                 cUser5.setPassword("user");
                 cUser5.setRole("USER");
-                cUser5.setAvatar(readBase64FromFile(System.getProperty("user.dir")+"/src/main/java/net/chatapp/conf/db/avatarbase-64.txt"));
+
                 cUser5 = cUserService.saveNew(cUser5);
             }
 
